@@ -116,6 +116,11 @@ static NSString *const kOpenIDRealmParameter = @"openid.realm";
   [encoder encodeObject:_hostedDomain forKey:kHostedDomainKey];
 }
 
+#pragma mark - private method
+- (void)setScopes:(NSArray<NSString *> *)scopes {
+  _grantedScopes = scopes;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -1080,6 +1080,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   }
 
   if (tokenError) {
+    [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
     _savedTokenCallback(nil, tokenError);
     return;
   }
@@ -1091,6 +1092,7 @@ static void *kTestObserverContext = &kTestObserverContext;
   [[[_user stub] andReturn:_user] alloc];
   __block OIDAuthState *authState;
   __block GIDProfileData *profileData;
+  [[[_authState expect] andReturn:tokenResponse] lastTokenResponse];
 
   if (keychainError) {
     _saveAuthorizationReturnValue = NO;

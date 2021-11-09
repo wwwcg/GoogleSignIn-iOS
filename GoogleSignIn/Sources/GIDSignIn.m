@@ -619,15 +619,34 @@ static const NSTimeInterval kMinimumRestoredAccessTokenTimeToExpire = 600.0;
   [authFlow addCallback:^() {
     GIDAuthFlow *handlerAuthFlow = weakAuthFlow;
     OIDAuthState *authState = handlerAuthFlow.authState;
-    if (authState && !handlerAuthFlow.error) {
-      if (![self saveAuthState:authState]) {
-        handlerAuthFlow.error = [self errorWithString:kKeychainError
-                                                 code:kGIDSignInErrorCodeKeychain];
-        return;
+    NSArray<NSString *> *grantedScopes;
+    NSString *grantedScopeString = authState.lastTokenResponse.scope;
+    if (grantedScopeString) {
+      // If we have a 'scope' parameter from the backend, this is authoritative.
+      // Remove leading and trailing whitespace.
+      grantedScopeString = [grantedScopeString stringByTrimmingCharactersInSet:
+          [NSCharacterSet whitespaceCharacterSet]];
+      // Tokenize with space as a delimiter.
+      NSMutableArray<NSString *> *parsedScopes =
+          [[grantedScopeString componentsSeparatedByString:@" "] mutableCopy];
+      // Remove empty strings.
+      [parsedScopes removeObject:@""];
+      grantedScopes = [parsedScopes copy];
+    }
+
+    if ([GIDScopes containAdditionalScopes:grantedScopes]) {
+      [self->_currentUser setScopes:grantedScopes];
+    } else {
+      if (authState && !handlerAuthFlow.error) {
+        if (![self saveAuthState:authState]) {
+          handlerAuthFlow.error = [self errorWithString:kKeychainError
+                                                   code:kGIDSignInErrorCodeKeychain];
+          return;
+        }
+        GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
+                                                           profileData:handlerAuthFlow.profileData];
+        [self setCurrentUserWithKVO:user];
       }
-      GIDGoogleUser *user = [[GIDGoogleUser alloc] initWithAuthState:authState
-                                                         profileData:handlerAuthFlow.profileData];
-      [self setCurrentUserWithKVO:user];
     }
   }];
 }

@@ -27,6 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithAuthState:(OIDAuthState *)authState
                       profileData:(nullable GIDProfileData *)profileData;
 
+// Update the granted scopes
+- (void)setScopes:(NSArray<NSString *> *)scopes;
+
 @end
 
 NS_ASSUME_NONNULL_END
